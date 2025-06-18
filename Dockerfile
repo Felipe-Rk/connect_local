@@ -10,8 +10,15 @@ FROM ruby:3.3.3 AS backend
 WORKDIR /app
 
 # Dependências de sistema
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev curl git nodejs
-RUN apt-get update -qq && apt-get install -y libpq5 curl postgresql-client && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    libpq5 \
+    curl \
+    git \
+    nodejs \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
 
 # Copiar arquivos de produção
@@ -24,11 +31,8 @@ COPY . .
 # Copiar assets buildados do frontend
 COPY --from=frontend /app/public/assets ./public/assets
 COPY --from=frontend /app/public/vite ./public/vite
-RUN RAILS_ENV=production bundle exec rails assets:precompile
-
-# Precompilar assets Rails
 ENV RAILS_ENV=production
-RUN bundle exec rake assets:precompile
+RUN bundle exec rails assets:precompile
 
 # Etapa final: imagem leve para produção
 FROM ruby:3.3.3-slim AS production
